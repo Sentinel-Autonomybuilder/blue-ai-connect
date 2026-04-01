@@ -1,6 +1,6 @@
 {
   "name": "sentinel-ai-connect",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Zero-config decentralized VPN for AI agents. One function call from zero to encrypted P2P tunnel. No API keys, no accounts, no servers.",
   "type": "module",
   "main": "index.js",
@@ -30,7 +30,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "sentinel-dvpn-sdk": "^1.1.2",
+    "sentinel-dvpn-sdk": "^1.2.1",
     "axios": "^1.7.0",
     "socks-proxy-agent": "^8.0.0"
   },
