@@ -33,21 +33,27 @@ function findV2Ray() {
     return process.env.V2RAY_PATH;
   }
 
-  // 2. SDK package bin/ (when installed via npm)
-  const sdkPkgBin = resolve(__dirname, 'node_modules', 'sentinel-dvpn-sdk', 'bin', binary);
-  if (existsSync(sdkPkgBin)) return sdkPkgBin;
+  // 2. Resolve SDK package via require.resolve (most reliable)
+  try {
+    const sdkIndex = resolve(__dirname, '..', 'sentinel-dvpn-sdk', 'bin', binary);
+    if (existsSync(sdkIndex)) return sdkIndex;
+  } catch {}
 
-  // 3. Parent node_modules SDK bin/ (hoisted)
-  const hoistedBin = resolve(__dirname, '..', 'node_modules', 'sentinel-dvpn-sdk', 'bin', binary);
-  if (existsSync(hoistedBin)) return hoistedBin;
+  // 3. Project root node_modules (hoisted — go up from this package to project root)
+  const projectBin = resolve(__dirname, '..', '..', 'node_modules', 'sentinel-dvpn-sdk', 'bin', binary);
+  if (existsSync(projectBin)) return projectBin;
 
-  // 4. Local bin/
+  // 4. Direct sibling in node_modules (standard npm layout)
+  const siblingPkg = resolve(__dirname, '..', 'sentinel-dvpn-sdk', 'bin', binary);
+  if (existsSync(siblingPkg)) return siblingPkg;
+
+  // 5. Local bin/
   const localBin = resolve(__dirname, 'bin', binary);
   if (existsSync(localBin)) return localBin;
 
-  // 5. Sibling bin/ (monorepo layout)
-  const siblingBin = resolve(__dirname, '..', 'bin', binary);
-  if (existsSync(siblingBin)) return siblingBin;
+  // 6. Parent bin/ (monorepo layout)
+  const parentBin = resolve(__dirname, '..', 'bin', binary);
+  if (existsSync(parentBin)) return parentBin;
 
   // 5. System paths
   const systemPaths = process.platform === 'win32'
