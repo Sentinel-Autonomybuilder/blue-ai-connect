@@ -20,7 +20,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node -e \"import('./index.js').then(m => console.log('OK:', Object.keys(m).length, 'exports'))\""
+    "test": "node -e \"import('./index.js').then(m => console.log('OK:', Object.keys(m).length, 'exports'))\"",
+    "postinstall": "node -e \"import('sentinel-dvpn-sdk/bin/setup.js').catch(()=>{})\" || true"
   },
   "keywords": [
     "ai", "vpn", "dvpn", "sentinel", "agent", "decentralized", "wireguard",
