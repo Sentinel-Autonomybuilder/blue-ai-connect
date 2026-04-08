@@ -1,6 +1,6 @@
 {
   "name": "sentinel-ai-connect",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Zero-config decentralized VPN for AI agents. One function call to private internet access through Sentinel's P2P network — no accounts, no servers, no dependencies on centralized infrastructure.",
   "type": "module",
   "main": "index.js",

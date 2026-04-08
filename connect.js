@@ -23,6 +23,7 @@
  *   connect-status.js   — status(), disconnect(), onEvent()
  */
 
+import { AiPathError, AiPathErrorCodes, NextActions } from './errors.js';
 import {
   createWallet as sdkCreateWallet,
   formatP2P,
@@ -91,10 +92,10 @@ export { disconnect, status, onEvent } from './connect-status.js';
  */
 export async function connect(opts = {}) {
   if (!opts || typeof opts !== 'object') {
-    throw new Error('connect() requires an options object with at least { mnemonic }');
+    throw new AiPathError(AiPathErrorCodes.INVALID_OPTIONS, 'connect() requires an options object with at least { mnemonic }', null, NextActions.NONE);
   }
   if (!opts.mnemonic || typeof opts.mnemonic !== 'string') {
-    throw new Error('connect() requires a mnemonic string (12 or 24 word BIP39 phrase)');
+    throw new AiPathError(AiPathErrorCodes.MISSING_MNEMONIC, 'connect() requires a mnemonic string (12 or 24 word BIP39 phrase)', null, NextActions.CREATE_WALLET);
   }
 
   const silent = opts.silent === true;
@@ -140,7 +141,7 @@ export async function connect(opts = {}) {
     log(2, totalSteps, 'WALLET', `Address: ${walletAddress}`);
   } catch (err) {
     log(2, totalSteps, 'WALLET', `Failed: ${err.message}`);
-    throw new Error('Invalid mnemonic — wallet derivation failed');
+    throw new AiPathError(AiPathErrorCodes.INVALID_MNEMONIC, 'Invalid mnemonic — wallet derivation failed', null, NextActions.CREATE_WALLET);
   }
   timings.wallet = Date.now() - t0;
 
@@ -153,11 +154,12 @@ export async function connect(opts = {}) {
   log(3, totalSteps, 'BALANCE', `Balance: ${balCheck.p2p} | Sufficient: ${balCheck.sufficient}`);
 
   if (!balCheck.sufficient && !opts.dryRun) {
-    const err = new Error(`Insufficient balance: ${balCheck.p2p}. Need at least ${formatP2P(MIN_BALANCE_UDVPN)}. Fund address: ${walletAddress}`);
-    err.code = 'INSUFFICIENT_BALANCE';
-    err.nextAction = 'fund_wallet';
-    err.details = { address: walletAddress, balance: balCheck.p2p, minimum: formatP2P(MIN_BALANCE_UDVPN) };
-    throw err;
+    throw new AiPathError(
+      AiPathErrorCodes.INSUFFICIENT_BALANCE,
+      `Insufficient balance: ${balCheck.p2p}. Need at least ${formatP2P(MIN_BALANCE_UDVPN)}. Fund address: ${walletAddress}`,
+      { address: walletAddress, balance: balCheck.p2p, minimum: formatP2P(MIN_BALANCE_UDVPN) },
+      NextActions.FUND_WALLET,
+    );
   }
   timings.balance = Date.now() - t0;
 
@@ -219,11 +221,12 @@ export async function connect(opts = {}) {
   } catch (err) {
     timings.total = Date.now() - connectStart;
     const { message, nextAction } = humanError(err);
-    const wrapped = new Error(message);
-    wrapped.code = err?.code || 'UNKNOWN';
-    wrapped.nextAction = nextAction;
-    wrapped.details = err?.details || null;
-    wrapped.timing = { totalMs: timings.total, phases: { ...timings } };
+    const wrapped = new AiPathError(
+      err?.code || 'CONNECT_FAILED',
+      message,
+      { ...(err?.details || {}), timing: { totalMs: timings.total, phases: { ...timings } } },
+      nextAction,
+    );
 
     log(5, totalSteps, 'FAILED', `${wrapped.code}: ${message} → nextAction: ${nextAction}`);
     throw wrapped;
