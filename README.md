@@ -445,16 +445,30 @@ monitor.stop();
 ## Architecture
 
 ```
-sentinel-ai-connect
-|
-+-- Sentinel JS SDK (sentinel-dvpn-sdk)
+sentinel-ai-connect (v1.2.0 — modular)
+├── connect.js              Orchestrator: 7-stage connection flow
+├── connect-session.js      Stages 4-6: node selection, payment, tunnel
+├── connect-verify.js       Stage 7: IP verification, split tunnel check
+├── connect-status.js       disconnect(), status(), onEvent()
+├── connect-helpers.js      Shared state, progress logging, balance check
+├── discover.js             Node discovery and filtering
+├── recommend.js            Decision engine for autonomous agents
+├── recommend-filters.js    Country/protocol/price filtering
+├── recommend-scoring.js    Node quality scoring
+├── wallet.js               Wallet creation, import, balance
+├── pricing.js              Cost estimation
+├── environment.js          OS/dependency detection
+├── errors.js               22 typed error codes with nextAction
+├── cli.js                  CLI dispatcher
+├── cli/                    CLI command handlers (5 files)
+├── index.js                20 curated exports
+└── index.d.ts              Full TypeScript declarations
     |
-    +-- Wallet        BIP39 mnemonic -> Cosmos HD derivation -> secp256k1 signing
-    +-- Chain          LCD/RPC queries, protobuf encoding, TX broadcast with retry
-    +-- Handshake      V3 protocol: ECDSA signature + key exchange
-    +-- Tunnel         WireGuard (Noise protocol) or V2Ray (VMess/VLess + transports)
-    +-- State          Crash recovery, credential caching, session tracking
-    +-- Security       TOFU TLS, kill switch, DNS leak prevention, key zeroing
+    +-- Sentinel JS SDK (sentinel-dvpn-sdk v1.3.0)
+        +-- chain/         Wallet, LCD queries, TX broadcast, fee grants
+        +-- connection/    Connect, disconnect, discovery, security
+        +-- protocol/      Handshake, WireGuard, V2Ray, protobuf encoding
+        +-- types/         3,828 lines of TypeScript declarations
 ```
 
 ### Connection Lifecycle
